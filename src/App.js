@@ -14,22 +14,8 @@ class App extends Component {
       location_type: "",
       location_string: "",
       communication: "",
-      leadList: [
-        {
-          id: 1,
-          updated_at: "2019-06-12T12:11:39.127842Z",
-          created_at: "2019-06-12T12:11:39.127901Z",
-          first_name: "Nilesh",
-          last_name: "Agarwal",
-          mobile: "9871028111",
-          email: "abc@gmail.com",
-          location_type: "City",
-          location_string: "India",
-          status: "Created",
-          communication: null,
-          tags: null,
-        },
-      ],
+      leadList: [],
+      id: "",
     };
   }
   componentDidMount = async () => {
@@ -43,9 +29,10 @@ class App extends Component {
     });
 
     const leadListData = await instance.get(`api/leads/?location_string=India`);
-    // this.setState({
-    //   leadList: leadListData.data.data
-    // });
+    console.log("data", leadListData.data);
+    this.setState({
+      leadList: leadListData.data,
+    });
   };
 
   addLead = async (e) => {
@@ -65,7 +52,14 @@ class App extends Component {
 
     console.log("body", body);
 
-    const res = await instance.post(`api/leads/`, body);
+    const res = await instance.post(`api/leads/`, {
+      first_name: this.state.first_name,
+      last_name: this.state.last_name,
+      email: this.state.email,
+      mobile: this.state.mobile,
+      location_type: this.state.location_type,
+      location_string: this.state.location_string,
+    });
 
     // const res = await apiService.post("bug", data);
     if (res.data.success) {
@@ -86,17 +80,21 @@ class App extends Component {
     const instance = await axios.create({
       baseURL: process.env.REACT_APP_API_URL,
     });
-    let id = 1;
+    let id = this.state.id;
     const res = await instance.delete(`api/leads/${id}`);
+    console.log("res delete", res);
+    this.getLeadList();
   };
   updateMarkLead = async () => {
     const instance = await axios.create({
       baseURL: process.env.REACT_APP_API_URL,
     });
-    let id = 1;
+    let id = this.state.id;
     const res = await instance.put(`api/mark_lead/${id}`, {
       communication: this.state.communication,
     });
+    console.log("res", res);
+    this.getLeadList();
   };
 
   render() {
@@ -116,11 +114,10 @@ class App extends Component {
                 <span className="icon-bar"></span>
               </button>
               <a className="navbar-brand" href="#">
-               Lead Task
+                Lead Task
               </a>
             </div>
             <div className="collapse navbar-collapse" id="myNavbar">
-             
               <ul className="nav navbar-nav navbar-right">
                 <li>
                   <a href="#">
@@ -175,6 +172,7 @@ class App extends Component {
                           <td>{item.status}</td>
                           <td>
                             <button
+                              onClick={() => this.setState({ id: item.id })}
                               data-toggle="modal"
                               data-target="#myModal"
                               className="btn btn-primary btn-sm"
@@ -182,6 +180,7 @@ class App extends Component {
                               Mark Update
                             </button>
                             <button
+                              onClick={() => this.setState({ id: item.id })}
                               style={{ marginLeft: "10px" }}
                               data-toggle="modal"
                               data-target="#myModal2"
